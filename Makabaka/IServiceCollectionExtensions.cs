@@ -20,10 +20,13 @@ namespace Makabaka
 		/// </summary>
 		public static IServiceCollection AddMakabaka(this IServiceCollection services)
 		{
-			services.AddHostedService<BotContext>();
-			services.AddSingleton<IBotContext, BotContext>(
-				provider => provider.GetServices<IHostedService>().OfType<BotContext>().First()
-				);
+            services.AddSingleton<IBotContext, BotContext>();
+            services.AddHostedService(provider =>
+            {
+                if (provider.GetRequiredService<IBotContext>() is not BotContext botContext)
+                    throw new InvalidOperationException("BotContext is not set.");
+                return botContext;
+            });
 			services.AddSingleton<JsonConverter<Message>, MessageJsonConverter>();
 			services.AddSingleton<JsonConverter<SexType>, SexTypeJsonConverter>();
 			services.AddSingleton<JsonConverter<DateTime>, TimestampDateTimeJsonConverter>();
